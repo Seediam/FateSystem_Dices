@@ -1,0 +1,12 @@
+{
+  "name": "Dados de Atributo",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "action": {
+    "title": "Rolar Atributos",
+    "icon": "/icon.svg",
+    "popover": "/",
+    "width": 350,
+    "height": 600
+  }
+}
