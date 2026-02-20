@@ -1,43 +1,47 @@
-// Importa o motor de dados 3D diretamente via CDN
-import DiceBox from "https://unpkg.com/@3d-dice/dice-box@1.1.3/dist/dice-box.es.min.js";
+// Importa o SDK Oficial do Owlbear Rodeo
+import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/lib/index.mjs";
 
-// Inicializa a caixa de dados dentro da div #dice-box
-const box = new DiceBox("#dice-box", {
-  assetPath: "https://unpkg.com/@3d-dice/dice-box@1.1.3/dist/assets/",
-  theme: "default",
-  scale: 6, // Tamanho dos dados
-  gravity: 2
-});
-
-// Prepara o motor 3D
-box.init().then(() => {
-  console.log("Motor de dados 3D pronto!");
-});
-
-// Função para rolar os dados ao clicar no botão
-document.getElementById('btn-rolar').addEventListener('click', () => {
+// Espera que a sala do Owlbear esteja totalmente carregada
+OBR.onReady(() => {
   
-  // Pega os valores dos inputs
-  const forca = parseInt(document.getElementById('qtd-forca').value) || 0;
-  const magia = parseInt(document.getElementById('qtd-magia').value) || 0;
-  const agilidade = parseInt(document.getElementById('qtd-agilidade').value) || 0;
-  const sorte = parseInt(document.getElementById('qtd-sorte').value) || 0;
+  document.getElementById('btn-rolar').addEventListener('click', () => {
+    
+    // Pega nos valores dos inputs
+    const forca = parseInt(document.getElementById('qtd-forca').value) || 0;
+    const magia = parseInt(document.getElementById('qtd-magia').value) || 0;
+    const agilidade = parseInt(document.getElementById('qtd-agilidade').value) || 0;
+    const sorte = parseInt(document.getElementById('qtd-sorte').value) || 0;
 
-  // Monta a configuração dos dados. Só adiciona na rolagem se for maior que 0.
-  let dadosParaRolar = [];
+    let notacao = [];
 
-  if (forca > 0) dadosParaRolar.push({ sides: 20, qty: forca, themeColor: '#ff0000' });
-  if (magia > 0) dadosParaRolar.push({ sides: 20, qty: magia, themeColor: '#0000ff' });
-  if (agilidade > 0) dadosParaRolar.push({ sides: 20, qty: agilidade, themeColor: '#800080' });
-  if (sorte > 0) dadosParaRolar.push({ sides: 20, qty: sorte, themeColor: '#00ff00' });
+    // Monta a notação de dados para ser lida pelos plugins 3D
+    if (forca > 0) notacao.push(`${forca}d20{Red}`);
+    if (magia > 0) notacao.push(`${magia}d20{Blue}`);
+    if (agilidade > 0) notacao.push(`${agilidade}d20{Purple}`);
+    if (sorte > 0) notacao.push(`${sorte}d20{Green}`);
 
-  // Se o jogador não escolheu nenhum dado, não faz nada
-  if (dadosParaRolar.length === 0) {
-    alert("Coloque pelo menos 1 dado em algum atributo!");
-    return;
-  }
+    if (notacao.length === 0) {
+      alert("Coloque pelo menos 1 dado em algum atributo!");
+      return;
+    }
 
-  // Limpa rolagens anteriores e rola os novos dados!
-  box.clear();
-  box.roll(dadosParaRolar);
+    const comandoDeRolagem = notacao.join(" + ");
+
+    // Envia o comando para o plugin "dddice" (o mais famoso do Owlbear)
+    OBR.broadcast.sendMessage("dddice/roll", {
+      equation: comandoDeRolagem,
+      theme: "dddice-standard"
+    });
+
+    // Envia também para o plugin "Dice+" (como segurança)
+    OBR.broadcast.sendMessage("dice-plus/roll", {
+      notation: comandoDeRolagem
+    });
+
+    // Zera os valores após rolar
+    document.getElementById('qtd-forca').value = 0;
+    document.getElementById('qtd-magia').value = 0;
+    document.getElementById('qtd-agilidade').value = 0;
+    document.getElementById('qtd-sorte').value = 0;
+  });
 });
