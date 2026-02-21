@@ -1,7 +1,7 @@
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/lib/index.mjs";
 
-// Nós ligamos o botão IMEDIATAMENTE, sem esperar o Owlbear!
 document.getElementById('btn-rolar').addEventListener('click', async () => {
+  const status = document.getElementById('status-texto');
   
   const forca = parseInt(document.getElementById('qtd-forca').value) || 0;
   const magia = parseInt(document.getElementById('qtd-magia').value) || 0;
@@ -10,33 +10,36 @@ document.getElementById('btn-rolar').addEventListener('click', async () => {
 
   let notacao = [];
 
-  if (forca > 0) notacao.push(`${forca}d20@dddice-red`);
-  if (magia > 0) notacao.push(`${magia}d20@dddice-blue`);
-  if (agilidade > 0) notacao.push(`${agilidade}d20@dddice-purple`);
-  if (sorte > 0) notacao.push(`${sorte}d20@dddice-green`);
+  // Padrão de cores suportado nativamente pelo Dice+
+  if (forca > 0) notacao.push(`${forca}d20{Red}`);
+  if (magia > 0) notacao.push(`${magia}d20{Blue}`);
+  if (agilidade > 0) notacao.push(`${agilidade}d20{Purple}`);
+  if (sorte > 0) notacao.push(`${sorte}d20{Green}`);
 
   if (notacao.length === 0) {
-    alert("Coloque pelo menos 1 dado em algum atributo!");
+    status.innerText = "⚠️ Escolha pelo menos 1 dado!";
+    status.style.color = "#ff5555";
     return;
   }
 
   const comandoDeRolagem = notacao.join(" + ");
-
-  // Esse alerta VAI aparecer, não importa onde você clique
-  alert("Comando gerado: " + comandoDeRolagem);
+  
+  // Muda o texto na tela para você saber que o botão clicou!
+  status.innerText = `Enviando: ${comandoDeRolagem}`;
+  status.style.color = "#55ff55";
 
   try {
-    // Se estiver dentro do Owlbear, ele manda o rádio pro dddice
     if (OBR.isAvailable) {
-      OBR.broadcast.sendMessage("dddice/roll", {
-        equation: comandoDeRolagem
+      // Envia o comando para o Dice+
+      OBR.broadcast.sendMessage("dice-plus/roll", {
+        notation: comandoDeRolagem
       });
-      alert("Enviado para a mesa do Owlbear!");
     } else {
-      alert("Você está testando no site normal. O botão funciona!");
+      status.innerText = "Teste: Botão funciona, mas não está no Owlbear.";
     }
   } catch (erro) {
-    alert("Erro de conexão: " + erro);
+    status.innerText = `Erro de rede: ${erro}`;
+    status.style.color = "#ff5555";
   }
 
   // Zera os contadores
