@@ -1,9 +1,10 @@
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/lib/index.mjs";
 
 OBR.onReady(() => {
+  console.log("Extensão FateSystem conectada ao Owlbear!"); // Aviso invisível para devs
+
   document.getElementById('btn-rolar').addEventListener('click', () => {
     
-    // Pega os valores da ficha
     const forca = parseInt(document.getElementById('qtd-forca').value) || 0;
     const magia = parseInt(document.getElementById('qtd-magia').value) || 0;
     const agilidade = parseInt(document.getElementById('qtd-agilidade').value) || 0;
@@ -11,7 +12,6 @@ OBR.onReady(() => {
 
     let notacao = [];
 
-    // O dddice usa o @ para definir a cor/tema do dado 3D
     if (forca > 0) notacao.push(`${forca}d20@dddice-red`);
     if (magia > 0) notacao.push(`${magia}d20@dddice-blue`);
     if (agilidade > 0) notacao.push(`${agilidade}d20@dddice-purple`);
@@ -22,15 +22,16 @@ OBR.onReady(() => {
       return;
     }
 
-    // Junta tudo numa frase só. Exemplo: "2d20@dddice-red + 1d20@dddice-blue"
     const comandoDeRolagem = notacao.join(" + ");
 
-    // Grita para a sala do Owlbear: "Ei dddice, rola isso aqui!"
+    // TESTE DE SINAL DE VIDA: Essa janela TEM que aparecer!
+    alert("Enviando comando para o dddice: " + comandoDeRolagem);
+
     OBR.broadcast.sendMessage("dddice/roll", {
       equation: comandoDeRolagem
     });
 
-    // Zera os contadores para a próxima rolagem
+    // Zera os contadores
     document.getElementById('qtd-forca').value = 0;
     document.getElementById('qtd-magia').value = 0;
     document.getElementById('qtd-agilidade').value = 0;
