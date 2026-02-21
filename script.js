@@ -67,6 +67,26 @@
     atualizarUI();
   }
 
+  function waitForOBRReady(timeoutMs) {
+    return new Promise((resolve) => {
+      const OBR = globalThis.OBR;
+      if (!OBR || typeof OBR.onReady !== "function") {
+        resolve(false);
+        return;
+      }
+
+      let done = false;
+      const finish = (ok) => {
+        if (done) return;
+        done = true;
+        resolve(ok);
+      };
+
+      OBR.onReady(() => finish(true));
+      setTimeout(() => finish(false), timeoutMs);
+    });
+  }
+
   document.querySelectorAll(".atributo").forEach((bloco) => {
     const attr = bloco.dataset.attr;
 
@@ -93,17 +113,18 @@
       setStatus(`Rolando: ${equacao}`, "#66dd66");
 
       try {
+        const ready = await waitForOBRReady(2500);
         const OBR = globalThis.OBR;
         const sender = OBR && OBR.broadcast && OBR.broadcast.sendMessage;
 
-        if (typeof sender !== "function") {
-          setStatus("OBR/dddice indisponível. Abra pela extensão no Owlbear.", "#f0b90b");
+        if (!ready || typeof sender !== "function") {
+          setStatus("OBR/dddice indisponível. Verifique se a extensão está aberta na sala.", "#f0b90b");
           return;
         }
 
         sender("dddice/roll", { equation: equacao });
         limparSelecao();
-        setStatus("Dados enviados para rolagem.", "#66dd66");
+        setStatus("Dados enviados para o dddice.", "#66dd66");
       } catch (erro) {
         setStatus(`Erro ao rolar: ${erro}`, "#ff6868");
       }
